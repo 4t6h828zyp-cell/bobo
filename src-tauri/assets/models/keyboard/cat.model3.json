@@ -1,69 +1,45 @@
 {
-  "Version": 3,
-  "FileReferences": {
-    "Moc": "demomodel2.moc3",
-    "Textures": [
-      "demomodel2.1024/texture_00.png",
-      "demomodel2.1024/texture_01.png",
-      "demomodel2.1024/texture_02.png"
-    ],
-    "DisplayInfo": "demomodel2.cdi3.json",
-    "Expressions": [
-      {
-        "Name": "live2d_expression0.exp3.json",
-        "File": "live2d_expression0.exp3.json"
-      },
-      {
-        "Name": "live2d_expression1.exp3.json",
-        "File": "live2d_expression1.exp3.json"
-      },
-      {
-        "Name": "live2d_expression2.exp3.json",
-        "File": "live2d_expression2.exp3.json"
-      }
-    ],
-    "Motions": {
-      "CAT_motion": [
-        {
-          "File": "live2d_motion1.motion3.json",
-          "Sound": "live2d_motion1.flac",
-          "FadeInTime": 0,
-          "FadeOutTime": 0
-        },
-        {
-          "File": "live2d_motion2.motion3.json",
-          "FadeInTime": 0,
-          "FadeOutTime": 0
-        }
-      ],
-      "CAT_motion_lock": [
-        {
-          "File": "live2d_motion1.motion3.json",
-          "Sound": "live2d_motion1.flac",
-          "FadeInTime": 0,
-          "FadeOutTime": 0
-        },
-        {
-          "File": "live2d_motion2.motion3.json",
-          "FadeInTime": 0,
-          "FadeOutTime": 0
-        }
-      ]
-    }
-  },
-  "Groups": [
-    {
-      "Target": "Parameter",
-      "Name": "EyeBlink",
-      "Ids": [
-        "ParamEyeLOpen",
-        "ParamEyeROpen"
-      ]
-    },
-    {
-      "Target": "Parameter",
-      "Name": "LipSync",
-      "Ids": []
-    }
-  ]
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "cat.moc3",
+		"Textures": [
+			"cat.2048/texture_00.png"
+		],
+		"Physics": "cat.physics3.json",
+		"DisplayInfo": "cat.cdi3.json",
+		"Expressions": [
+			{
+				"Name": "live2d_expression0",
+				"File": "expression1.exp3.json"
+			},
+			{
+				"Name": "live2d_expression1",
+				"File": "expression2.exp3.json"
+			},
+			{
+				"Name": "live2d_expression2",
+				"File": "expression3.exp3.json"
+			},
+			{
+				"Name": "live2d_expression3",
+				"File": "expression4.exp3.json"
+			}
+		]
+	},
+	"Groups": [
+		{
+			"Target": "Parameter",
+			"Name": "LipSync",
+			"Ids": []
+		},
+		{
+			"Target": "Parameter",
+			"Name": "EyeBlink",
+			"Ids": [
+				"ParamEyeLOpen",
+				"ParamEyeROpen"
+			]
+		}
+	],
+	"HitAreas": []
 }

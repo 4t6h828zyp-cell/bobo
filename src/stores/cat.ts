@@ -1,6 +1,13 @@
 import { defineStore } from 'pinia'
 import { reactive, ref } from 'vue'
 
+/**
+ * 背景模式：
+ * - transparent: 完全透明，不显示任何背景图（默认）
+ * - scene: 按猫的动作自动切换背景（预留，未来阶段实现）
+ */
+export type BackgroundMode = 'transparent' | 'scene'
+
 export interface CatStore {
   model: {
     mirror: boolean
@@ -21,6 +28,15 @@ export interface CatStore {
     hideOnHover: boolean
     hideOnHoverDelay: number
     keepInScreen: boolean
+  }
+  /**
+   * 背景配置
+   * - mode: 'transparent' 默认透明；'scene' 为按动作切换背景（预留接口）
+   * - scenesDirectory: 场景背景图所在子目录（约定: resources/<scenesDirectory>/<group>_<name>.png）
+   */
+  background: {
+    mode: BackgroundMode
+    scenesDirectory: string
   }
 }
 
@@ -70,6 +86,11 @@ export const useCatStore = defineStore('cat', () => {
     keepInScreen: true,
   })
 
+  const background = reactive<CatStore['background']>({
+    mode: 'transparent',
+    scenesDirectory: 'scenes',
+  })
+
   const init = () => {
     if (migrated.value) return
 
@@ -89,6 +110,7 @@ export const useCatStore = defineStore('cat', () => {
     migrated,
     model,
     window,
+    background,
     init,
   }
 })

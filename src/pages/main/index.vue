@@ -60,11 +60,10 @@ watch(() => modelStore.currentModel, async (model) => {
 
   await handleLoad()
 
-  const path = join(model.path, 'resources', 'background.png')
-
-  const existed = await exists(path)
-
-  backgroundImagePath.value = existed ? convertFileSrc(path) : void 0
+  // 背景初始化：根据 catStore.background.mode 决定
+  // - transparent (默认): 不加载任何背景
+  // - scene: 按当前动作加载场景背景（预留接口，初始不显示）
+  applyBackgroundForMotion()
 
   clearObject([modelStore.supportKeys, modelStore.pressedKeys])
 
@@ -85,6 +84,43 @@ watch(() => modelStore.currentModel, async (model) => {
 
   modelStore.modelReady = true
 }, { deep: true, immediate: true })
+
+/**
+ * 根据当前背景模式和动作更新背景图。
+ * 预留的"按动作切换场景"接口 - 阶段 3+ 可扩展。
+ * 当前实现：
+ *   - transparent: 永远清空
+ *   - scene: 尝试加载 resources/<scenesDirectory>/<group>_<name>.png，
+ *            文件不存在则清空
+ */
+async function applyBackgroundForMotion(motion?: { group?: string, name?: string }) {
+  if (catStore.background.mode === 'transparent') {
+    backgroundImagePath.value = undefined
+    return
+  }
+
+  // scene 模式
+  if (!motion?.group || !motion?.name || !modelStore.currentModel) {
+    backgroundImagePath.value = undefined
+    return
+  }
+
+  const safeName = `${motion.group}_${motion.name}`
+  const candidate = join(
+    modelStore.currentModel.path,
+    'resources',
+    catStore.background.scenesDirectory,
+    `${safeName}.png`,
+  )
+
+  const existed = await exists(candidate).catch(() => false)
+  backgroundImagePath.value = existed ? convertFileSrc(candidate) : undefined
+}
+
+// 监听背景模式变化（用户在设置里切换时立刻生效）
+watch(() => catStore.background.mode, () => {
+  applyBackgroundForMotion()
+})
 
 watch([() => catStore.window.scale, modelSize], async ([scale, modelSize]) => {
   if (!modelSize) return
@@ -129,6 +165,10 @@ watch(() => catStore.model.maxFPS, live2d.setMaxFPS, { immediate: true })
 
 useTauriListen<MotionInfo>(LISTEN_KEY.START_MOTION, ({ payload }) => {
   live2d.startMotion(payload)
+  // scene 模式下，根据触发的动作切换背景
+  if (catStore.background.mode === 'scene') {
+    applyBackgroundForMotion(payload)
+  }
 })
 
 useTauriListen<number>(LISTEN_KEY.SET_EXPRESSION, ({ payload }) => {

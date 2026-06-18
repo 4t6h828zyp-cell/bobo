@@ -16,6 +16,7 @@ import { useAppMenu } from '@/composables/useAppMenu'
 import { useDevice } from '@/composables/useDevice'
 import { useGamepad } from '@/composables/useGamepad'
 import { useModel } from '@/composables/useModel'
+import { usePseudoMotion } from '@/composables/usePseudoMotion'
 import { useTauriListen } from '@/composables/useTauriListen'
 import { LISTEN_KEY } from '@/constants'
 import { hideWindow, setAlwaysOnTop, setTaskbarVisibility, showWindow } from '@/plugins/window'
@@ -38,10 +39,17 @@ const generalStore = useGeneralStore()
 const resizing = ref(false)
 const backgroundImagePath = ref<string>()
 const { stickActive } = useGamepad()
+const pseudoMotion = usePseudoMotion()
 
-onMounted(startListening)
+onMounted(() => {
+  startListening()
+  pseudoMotion.start()
+})
 
-onUnmounted(handleDestroy)
+onUnmounted(() => {
+  handleDestroy()
+  pseudoMotion.stop()
+})
 
 const debouncedResize = useDebounceFn(async () => {
   await handleResize()

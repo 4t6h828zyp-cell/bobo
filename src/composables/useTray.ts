@@ -18,7 +18,7 @@ import { showWindow } from '../plugins/window'
 import { isMac } from '../utils/platform'
 import { useAppMenu } from './useAppMenu'
 
-const TRAY_ID = 'BONGO_CAT_TRAY'
+const TRAY_ID = 'BOBO_TRAY'
 
 export function useTray() {
   const catStore = useCatStore()

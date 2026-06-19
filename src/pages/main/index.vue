@@ -227,8 +227,12 @@ function handleMouseMove(event: MouseEvent) {
 
 <template>
   <div
-    class="relative size-screen overflow-hidden children:(absolute size-full)"
-    :class="{ '-scale-x-100': catStore.model.mirror }"
+    class="root relative size-screen overflow-hidden children:(absolute size-full)"
+    :class="{
+      '-scale-x-100': catStore.model.mirror,
+      'is-scene': catStore.background.mode === 'scene',
+      [`scene-${pseudoMotion.currentScene}`]: catStore.background.mode === 'scene',
+    }"
     :style="{
       opacity: catStore.window.opacity / 100,
       borderRadius: `${catStore.window.radius}%`,
@@ -262,3 +266,44 @@ function handleMouseMove(event: MouseEvent) {
     </div>
   </div>
 </template>
+
+<style lang="scss" scoped>
+/* Scene backgrounds
+ * 只在 background.mode === 'scene' 时启用（class 'is-scene' 由模板条件渲染）。
+ * 渐变用 rgba 半透明色，确保 macOS 透明窗口仍能透视桌面。
+ * pointer-events: none 不影响点击穿透；z-index: 0 在 canvas 下层。
+ * 切换 transition 让 idle ↔ sleep 平滑过渡。
+ */
+.root.is-scene::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  transition: background 0.8s ease-in-out;
+}
+
+/* idle scene：极淡暖色，几乎透明，桌面透视强 */
+.root.is-scene.scene-idle::before {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 229, 236, 0.15),
+    rgba(255, 194, 209, 0.22)
+  );
+}
+
+/* sleep scene：深紫蓝夜晚，半透明 */
+.root.is-scene.scene-sleep::before {
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.35),
+    rgba(76, 29, 149, 0.45)
+  );
+}
+
+/* canvas 始终在背景层之上 */
+.root :deep(canvas#live2dCanvas) {
+  z-index: 1;
+}
+</style>

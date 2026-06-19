@@ -6,6 +6,15 @@ import live2d from '@/utils/live2d'
 import { useTauriListen } from './useTauriListen'
 
 /**
+ * 场景背景状态机
+ * - 'idle': 闲置，等待输入
+ * - 'sleep': 长时间无输入，进入睡觉
+ * 暴露给 main 页面用于按场景切换背景渐变。
+ * 仅在 catStore.background.mode === 'scene' 时实际渲染（透明模式不显示）。
+ */
+export type PseudoMotionScene = 'idle' | 'sleep'
+
+/**
  * bobo 伪动作系统
  *
  * 罗小黑模型本身没有 motions（0 motions），通过代码驱动 Live2D 参数合成
@@ -49,6 +58,11 @@ function safeSetParam(id: string, value: number): void {
 export function usePseudoMotion() {
   const isSleeping = ref(false)
   const lastInputTime = ref<number>(Date.now())
+  /**
+   * 当前场景状态。idle → sleep 由 enterSleep() 切换；sleep → idle 由 wakeUp() 切换。
+   * main/index.vue 监听这个值，根据 catStore.background.mode 决定是否渲染对应场景背景。
+   */
+  const currentScene = ref<PseudoMotionScene>('idle')
 
   // 所有 timer/raf id 都用 let，HMR 时 start() 先 stop() 重置
   let blinkTimer: number | null = null
@@ -111,6 +125,7 @@ export function usePseudoMotion() {
   function enterSleep() {
     if (isSleeping.value) return
     isSleeping.value = true
+    currentScene.value = 'sleep'
     safeSetParam('ParamEyeLOpen', 0)
     safeSetParam('ParamEyeROpen', 0)
   }
@@ -118,6 +133,7 @@ export function usePseudoMotion() {
   function wakeUp() {
     if (!isSleeping.value) return
     isSleeping.value = false
+    currentScene.value = 'idle'
     safeSetParam('ParamEyeLOpen', 1)
     safeSetParam('ParamEyeROpen', 1)
   }
@@ -174,6 +190,7 @@ export function usePseudoMotion() {
 
   return {
     isSleeping,
+    currentScene,
     start,
     stop,
   }

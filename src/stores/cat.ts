@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
-import { reactive, ref } from 'vue'
+import { nextTick, reactive, ref, watch } from 'vue'
+
+import { useModelStore } from './model'
 
 /**
  * 背景模式：
@@ -91,7 +93,36 @@ export const useCatStore = defineStore('cat', () => {
     scenesDirectory: 'scenes',
   })
 
+  // 规范化 scale：超出合理范围 [80, 150] 或非数字时重置为 100。
+  // shift+right+drag 可以把 scale 改成 10-500 之间的任意值，
+  // 持久化里如果残留 50、39 之类的异常值，启动后自动恢复。
+  function normalizeScale() {
+    if (typeof window.scale !== 'number' || !Number.isFinite(window.scale) || window.scale < 80 || window.scale > 150) {
+      window.scale = 100
+    }
+  }
+
+  // 在 scale 变化时持续检查（拦截 handleResize 的反向计算覆盖）。
+  // useModel.handleResize 会在窗口 resize 时根据当前窗口尺寸反向计算 scale
+  // （如 250/640*100=39），这个值可能在 [80,150] 之外。这个 watch 立即纠正
+  // 任何异常值。nextTick 防止 watch 自身引起的连锁写入。
+  // 用户手动 shift+right+drag 到 < 80 或 > 150 也会被纠正，这是有意的
+  // （这些值都被视为异常，不在合理范围）。
+  watch(
+    () => window.scale,
+    (newScale) => {
+      if (typeof newScale !== 'number' || !Number.isFinite(newScale) || newScale < 80 || newScale > 150) {
+        nextTick(() => {
+          window.scale = 100
+        })
+      }
+    },
+  )
+
   const init = () => {
+    // 每次启动都规范化一次（处理持久化里的脏值）
+    normalizeScale()
+
     if (migrated.value) return
 
     model.mirror = mirrorMode.value
